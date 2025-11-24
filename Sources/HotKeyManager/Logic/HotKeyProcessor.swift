@@ -314,12 +314,12 @@ public struct HotKeyProcessor {
 
     private func isInterruption(_ event: KeyEvent) -> Bool {
         // If the hotkey is strictly "contained" within the event, it's an interruption (adding more keys).
-        
+
         // Check modifiers
         guard hotkey.modifiers.isSubset(of: event.modifiers) else {
             return false // Modifiers released
         }
-        
+
         // Check key
         if let key = hotkey.key {
             // Hotkey has a key.

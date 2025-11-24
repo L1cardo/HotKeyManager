@@ -99,7 +99,7 @@ public extension HotKeyManager {
         }
 
         private func loadHotKey() {
-            hotKey = HotKeyManager.getShortcut(for: name)
+            hotKey = HotKeyManager.getHotKey(for: name)
         }
 
         private func startRecording() {
@@ -233,18 +233,18 @@ public extension HotKeyManager {
             guard var hotKey = hotKey else { return }
             hotKey.modifiers = hotKey.modifiers.setting(kind: kind, to: side)
             self.hotKey = hotKey
-            HotKeyManager.setShortcut(hotKey, for: name)
+            HotKeyManager.setHotKey(hotKey, for: name)
             onChange?(hotKey)
         }
 
         private func clearHotKey() {
-            HotKeyManager.setShortcut(nil, for: name)
+            HotKeyManager.setHotKey(nil, for: name)
             hotKey = nil
             onChange?(nil)
         }
 
         private func saveHotKey(_ newHotKey: HotKey, stop: Bool = true) {
-            HotKeyManager.setShortcut(newHotKey, for: name)
+            HotKeyManager.setHotKey(newHotKey, for: name)
             hotKey = newHotKey
             onChange?(newHotKey)
             if stop {

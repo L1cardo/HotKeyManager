@@ -5,8 +5,8 @@
 //  Created by Licardo on 2025/11/24.
 //
 
-import SwiftUI
 import Sauce
+import SwiftUI
 
 public extension HotKey {
     var toSwiftUI: KeyboardShortcut? {
@@ -51,7 +51,6 @@ public extension HotKey {
         case .x: keyEquivalent = "x"
         case .y: keyEquivalent = "y"
         case .z: keyEquivalent = "z"
-            
         case .zero: keyEquivalent = "0"
         case .one: keyEquivalent = "1"
         case .two: keyEquivalent = "2"
@@ -62,7 +61,6 @@ public extension HotKey {
         case .seven: keyEquivalent = "7"
         case .eight: keyEquivalent = "8"
         case .nine: keyEquivalent = "9"
-            
         case .minus: keyEquivalent = "-"
         case .equal: keyEquivalent = "="
         case .leftBracket: keyEquivalent = "["
@@ -74,24 +72,20 @@ public extension HotKey {
         case .period: keyEquivalent = "."
         case .slash: keyEquivalent = "/"
         case .grave: keyEquivalent = "`"
-            
         case .return: keyEquivalent = .return
         case .delete: keyEquivalent = .delete
         case .forwardDelete: keyEquivalent = .deleteForward
         case .escape: keyEquivalent = .escape
         case .tab: keyEquivalent = .tab
         case .space: keyEquivalent = .space
-            
         case .upArrow: keyEquivalent = .upArrow
         case .downArrow: keyEquivalent = .downArrow
         case .leftArrow: keyEquivalent = .leftArrow
         case .rightArrow: keyEquivalent = .rightArrow
-            
         case .home: keyEquivalent = .home
         case .end: keyEquivalent = .end
         case .pageUp: keyEquivalent = .pageUp
         case .pageDown: keyEquivalent = .pageDown
-            
         case .f1: keyEquivalent = KeyEquivalent(Character(UnicodeScalar(NSF1FunctionKey)!))
         case .f2: keyEquivalent = KeyEquivalent(Character(UnicodeScalar(NSF2FunctionKey)!))
         case .f3: keyEquivalent = KeyEquivalent(Character(UnicodeScalar(NSF3FunctionKey)!))
@@ -104,7 +98,6 @@ public extension HotKey {
         case .f10: keyEquivalent = KeyEquivalent(Character(UnicodeScalar(NSF10FunctionKey)!))
         case .f11: keyEquivalent = KeyEquivalent(Character(UnicodeScalar(NSF11FunctionKey)!))
         case .f12: keyEquivalent = KeyEquivalent(Character(UnicodeScalar(NSF12FunctionKey)!))
-            
         default:
             // Fallback for other keys if possible, or return nil
             return nil

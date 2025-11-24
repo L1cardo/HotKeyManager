@@ -1,5 +1,5 @@
 //
-//  ShortcutMonitor.swift
+//  HotKeyMonitor.swift
 //  HotKeyManager
 //
 //  Created by Licardo on 2025/11/23.
@@ -12,8 +12,8 @@ import Sauce
 
 /// Internal monitor that listens for system events and dispatches them to registered handlers.
 @MainActor
-final class ShortcutMonitor {
-    static let shared = ShortcutMonitor()
+final class HotKeyMonitor {
+    static let shared = HotKeyMonitor()
 
     private var handlers: [HotKeyManager.Name: [HotKeyManager.Event: [() -> Void]]] = [:]
     private var processors: [HotKeyManager.Name: HotKeyProcessor] = [:]
@@ -22,7 +22,7 @@ final class ShortcutMonitor {
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        // Listen for shortcut changes to update processors
+        // Listen for hotkey changes to update processors
         NotificationCenter.default.publisher(for: .hotKeyByNameDidChange)
             .sink { [weak self] notification in
                 guard let name = notification.userInfo?["name"] as? HotKeyManager.Name else { return }
@@ -52,7 +52,7 @@ final class ShortcutMonitor {
     }
     
     private func updateProcessor(for name: HotKeyManager.Name) {
-        if let hotKey = HotKeyManager.getShortcut(for: name) {
+        if let hotKey = HotKeyManager.getHotKey(for: name) {
             // Preserve existing state if possible, or create new
             if processors[name] == nil {
                 processors[name] = HotKeyProcessor(hotkey: hotKey)
@@ -86,9 +86,9 @@ final class ShortcutMonitor {
         var handled = false
         
         // Iterate through all processors
-        // Note: In a real app with many shortcuts, this might need optimization (e.g. indexing by key)
+        // Note: In a real app with many hotkeys, this might need optimization (e.g. indexing by key)
         // Iterate through all processors
-        // Note: In a real app with many shortcuts, this might need optimization (e.g. indexing by key)
+        // Note: In a real app with many hotkeys, this might need optimization (e.g. indexing by key)
         for (name, var processor) in processors {
             let output = processor.process(keyEvent: keyEvent)
             

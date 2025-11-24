@@ -9,34 +9,34 @@ import Combine
 import Foundation
 import SwiftUI
 
-/// Global keyboard shortcuts manager.
+/// Global keyboard hotkeys manager.
 public enum HotKeyManager {
     /// A strongly-typed name for a hotkey.
     public struct Name: Hashable, Sendable, RawRepresentable, ExpressibleByStringLiteral {
         public let rawValue: String
-        public let defaultShortcut: HotKey?
+        public let defaultHotKey: HotKey?
 
         public init(rawValue: String) {
             self.rawValue = rawValue
-            self.defaultShortcut = nil
+            self.defaultHotKey = nil
         }
 
         public init(stringLiteral value: String) {
             self.rawValue = value
-            self.defaultShortcut = nil
+            self.defaultHotKey = nil
         }
 
-        public init(_ name: String, default defaultShortcut: HotKey? = nil) {
+        public init(_ name: String, default defaultHotKey: HotKey? = nil) {
             self.rawValue = name
-            self.defaultShortcut = defaultShortcut
+            self.defaultHotKey = defaultHotKey
 
-            if let defaultShortcut {
-                HotKeyManager.registerDefault(defaultShortcut, for: name)
+            if let defaultHotKey {
+                HotKeyManager.registerDefault(defaultHotKey, for: name)
             }
 
             // Register default if not present
-            if defaultShortcut != nil, !HotKeyManager.userDefaultsContains(name: self) {
-                HotKeyManager.setShortcut(defaultShortcut, for: self)
+            if defaultHotKey != nil, !HotKeyManager.userDefaultsContains(name: self) {
+                HotKeyManager.setHotKey(defaultHotKey, for: self)
             }
         }
     }
@@ -53,10 +53,10 @@ public enum HotKeyManager {
     private nonisolated(unsafe) static var _defaults: [String: HotKey] = [:]
     private static let _lock = NSLock()
 
-    static func registerDefault(_ shortcut: HotKey, for name: String) {
+    static func registerDefault(_ hotkey: HotKey, for name: String) {
         _lock.lock()
         defer { _lock.unlock() }
-        _defaults[name] = shortcut
+        _defaults[name] = hotkey
     }
 
     private static func userDefaultsKey(for name: Name) -> String {
@@ -69,21 +69,21 @@ public enum HotKeyManager {
 
     // MARK: - Public API
 
-    /// Get the current shortcut for a name.
-    public static func getShortcut(for name: Name) -> HotKey? {
+    /// Get the current hotkey for a name.
+    public static func getHotKey(for name: Name) -> HotKey? {
         guard
             let data = UserDefaults.standard.data(forKey: userDefaultsKey(for: name)),
-            let shortcut = try? JSONDecoder().decode(HotKey.self, from: data)
+            let hotkey = try? JSONDecoder().decode(HotKey.self, from: data)
         else {
             return nil
         }
-        return shortcut
+        return hotkey
     }
 
-    /// Set the shortcut for a name.
-    public static func setShortcut(_ shortcut: HotKey?, for name: Name) {
-        if let shortcut = shortcut {
-            if let data = try? JSONEncoder().encode(shortcut) {
+    /// Set the hotkey for a name.
+    public static func setHotKey(_ hotkey: HotKey?, for name: Name) {
+        if let hotkey = hotkey {
+            if let data = try? JSONEncoder().encode(hotkey) {
                 UserDefaults.standard.set(data, forKey: userDefaultsKey(for: name))
             }
         } else {
@@ -94,12 +94,12 @@ public enum HotKeyManager {
         NotificationCenter.default.post(name: .hotKeyByNameDidChange, object: nil, userInfo: ["name": name])
     }
 
-    /// Reset the shortcut to its default.
+    /// Reset the hotkey to its default.
     public static func reset(_ name: Name) {
-        setShortcut(name.defaultShortcut, for: name)
+        setHotKey(name.defaultHotKey, for: name)
     }
 
-    /// Reset all shortcuts to their defaults.
+    /// Reset all hotkeys to their defaults.
     public static func resetAll() {
         // 1. Remove all HotKeyManager keys from UserDefaults
         let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
@@ -112,32 +112,27 @@ public enum HotKeyManager {
         let defaultsToRestore = _defaults
         _lock.unlock()
 
-        for (name, shortcut) in defaultsToRestore {
-            setShortcut(shortcut, for: Name(rawValue: name))
+        for (name, hotkey) in defaultsToRestore {
+            setHotKey(hotkey, for: Name(rawValue: name))
         }
     }
 
     // MARK: - Event Registration
 
-    /// Register a handler for a specific event on a shortcut.
+    /// Register a handler for a specific event on a hotkey.
     /// - Parameters:
     ///   - event: The event to listen for (e.g. .keyDown, .doubleTapUp).
-    ///   - name: The name of the shortcut to monitor.
+    ///   - name: The name of the hotkey to monitor.
     ///   - action: The closure to execute when the event occurs.
     @MainActor
     public static func on(_ event: Event, for name: Name, perform action: @escaping () -> Void) {
-        ShortcutMonitor.shared.register(event: event, for: name, action: action)
+        HotKeyMonitor.shared.register(event: event, for: name, action: action)
     }
 
-    /// Unregister all handlers for a shortcut.
-    /// - Parameter name: The name of the shortcut.
+    /// Unregister all handlers for a hotkey.
+    /// - Parameter name: The name of the hotkey.
     @MainActor
     public static func unregister(for name: Name) {
-        ShortcutMonitor.shared.unregister(for: name)
+        HotKeyMonitor.shared.unregister(for: name)
     }
-}
-
-extension Notification.Name {
-    static let hotKeyByNameDidChange = Notification.Name("HotKeyManager_hotKeyByNameDidChange")
-    static let recorderActiveStatusDidChange = Notification.Name("HotKeyManager_recorderActiveStatusDidChange")
 }
