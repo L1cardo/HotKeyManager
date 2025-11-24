@@ -91,7 +91,7 @@ public enum HotKeyManager {
         }
 
         // Notify listeners (implementation detail: could use NotificationCenter or Combine)
-        NotificationCenter.default.post(name: .hotKeyDidChange, object: nil, userInfo: ["name": name])
+        NotificationCenter.default.post(name: .hotKeyByNameDidChange, object: nil, userInfo: ["name": name])
     }
 
     /// Reset the shortcut to its default.
@@ -138,5 +138,6 @@ public enum HotKeyManager {
 }
 
 extension Notification.Name {
-    static let hotKeyDidChange = Notification.Name("HotKeyManager_HotKeyDidChange")
+    static let hotKeyByNameDidChange = Notification.Name("HotKeyManager_hotKeyByNameDidChange")
+    static let recorderActiveStatusDidChange = Notification.Name("HotKeyManager_recorderActiveStatusDidChange")
 }

@@ -23,7 +23,7 @@ final class ShortcutMonitor {
 
     init() {
         // Listen for shortcut changes to update processors
-        NotificationCenter.default.publisher(for: .hotKeyDidChange)
+        NotificationCenter.default.publisher(for: .hotKeyByNameDidChange)
             .sink { [weak self] notification in
                 guard let name = notification.userInfo?["name"] as? HotKeyManager.Name else { return }
                 self?.updateProcessor(for: name)

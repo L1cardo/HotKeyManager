@@ -93,7 +93,7 @@ public extension HotKeyManager {
             .onDisappear {
                 stopRecording()
             }
-            .onReceive(NotificationCenter.default.publisher(for: .hotKeyDidChange)) { _ in
+            .onReceive(NotificationCenter.default.publisher(for: .hotKeyByNameDidChange)) { _ in
                 loadHotKey()
             }
         }
@@ -105,6 +105,7 @@ public extension HotKeyManager {
         private func startRecording() {
             guard !isRecording else { return }
             isRecording = true
+            NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": true])
             currentModifiers = []
 
             // Add local monitor to capture keys
@@ -116,6 +117,7 @@ public extension HotKeyManager {
 
         private func stopRecording() {
             isRecording = false
+            NotificationCenter.default.post(name: .recorderActiveStatusDidChange, object: nil, userInfo: ["isActive": false])
             if let monitor = monitor {
                 NSEvent.removeMonitor(monitor)
                 self.monitor = nil
