@@ -86,6 +86,12 @@ public struct HotKeyProcessor {
             if chordMatchesHotkey(keyEvent) {
                 // Still holding the hotkey
                 return nil
+            } else if isInterruption(keyEvent) {
+                // Changed to a different chord (e.g. added extra modifier or key)
+                // This invalidates the current "tap" sequence.
+                reset()
+                lastTapAt = nil
+                return .discard
             } else if isReleaseForActiveHotkey(keyEvent) {
                 // Released the hotkey
                 return handleRelease(startTime: startTime, isDoubleTap: isDoubleTap)
@@ -304,5 +310,42 @@ public struct HotKeyProcessor {
         // If it doesn't match the hotkey, it's effectively a release (or a change to something else).
         // We want to trigger keyUp as soon as the chord is broken.
         return !chordMatchesHotkey(event)
+    }
+
+    private func isInterruption(_ event: KeyEvent) -> Bool {
+        // If the hotkey is strictly "contained" within the event, it's an interruption (adding more keys).
+        
+        // Check modifiers
+        guard hotkey.modifiers.isSubset(of: event.modifiers) else {
+            return false // Modifiers released
+        }
+        
+        // Check key
+        if let key = hotkey.key {
+            // Hotkey has a key.
+            if event.key == key {
+                // Key matches. Modifiers match (and possibly more).
+                // If modifiers are exact match, it would have been caught by chordMatchesHotkey.
+                // So here, modifiers must be superset.
+                return true
+            } else {
+                // Key different.
+                // If event.key is nil, it's a release of key. -> False.
+                // If event.key is different, it's a change. -> False (or True?)
+                // Cmd+A -> Cmd+B.
+                // Cmd+A is NOT contained in Cmd+B.
+                return false
+            }
+        } else {
+            // Hotkey is modifier only.
+            // Modifiers are contained.
+            // If event has a key, it's an interruption (Cmd -> Cmd+A).
+            if event.key != nil {
+                return true
+            }
+            // If event has NO key, but modifiers are superset (Cmd -> Cmd+Shift).
+            // It's an interruption.
+            return true
+        }
     }
 }

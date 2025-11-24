@@ -30,6 +30,10 @@ public enum HotKeyManager {
             self.rawValue = name
             self.defaultShortcut = defaultShortcut
 
+            if let defaultShortcut {
+                HotKeyManager.registerDefault(defaultShortcut, for: name)
+            }
+
             // Register default if not present
             if defaultShortcut != nil, !HotKeyManager.userDefaultsContains(name: self) {
                 HotKeyManager.setShortcut(defaultShortcut, for: self)
@@ -46,6 +50,14 @@ public enum HotKeyManager {
     // MARK: - Internal Storage
 
     private static let userDefaultsPrefix = "HotKeyManager_"
+    private nonisolated(unsafe) static var _defaults: [String: HotKey] = [:]
+    private static let _lock = NSLock()
+
+    static func registerDefault(_ shortcut: HotKey, for name: String) {
+        _lock.lock()
+        defer { _lock.unlock() }
+        _defaults[name] = shortcut
+    }
 
     private static func userDefaultsKey(for name: Name) -> String {
         "\(userDefaultsPrefix)\(name.rawValue)"
@@ -85,6 +97,24 @@ public enum HotKeyManager {
     /// Reset the shortcut to its default.
     public static func reset(_ name: Name) {
         setShortcut(name.defaultShortcut, for: name)
+    }
+
+    /// Reset all shortcuts to their defaults.
+    public static func resetAll() {
+        // 1. Remove all HotKeyManager keys from UserDefaults
+        let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
+        for key in allKeys where key.hasPrefix(userDefaultsPrefix) {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
+
+        // 2. Restore registered defaults
+        _lock.lock()
+        let defaultsToRestore = _defaults
+        _lock.unlock()
+
+        for (name, shortcut) in defaultsToRestore {
+            setShortcut(shortcut, for: Name(rawValue: name))
+        }
     }
 
     // MARK: - Event Registration

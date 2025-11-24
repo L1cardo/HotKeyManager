@@ -77,10 +77,10 @@ public struct HotKeyView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.leading)
+                .padding(.trailing, -.infinity)
             }
         }
         .frame(height: 48)
-        .padding()
         .frame(maxWidth: .infinity)
         .background {
             if isHotKeyEmpty {

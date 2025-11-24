@@ -54,6 +54,7 @@ public extension HotKeyManager {
                         VStack(alignment: .leading, spacing: 8) {
                             if hotKey.modifiers.sorted.contains(where: { $0.kind.supportsSideSelection }) {
                                 Text("Modifier side:", bundle: .module)
+                                    .padding(.bottom, -6)
                             }
 
                             ForEach(hotKey.modifiers.sorted) { modifier in
@@ -91,6 +92,9 @@ public extension HotKeyManager {
             }
             .onDisappear {
                 stopRecording()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .hotKeyDidChange)) { _ in
+                loadHotKey()
             }
         }
 
@@ -250,8 +254,8 @@ public extension HotKeyManager {
 
 #Preview {
     List {
-        HotKeyManager.Recorder(for: .init("toggleApp", default: HotKey(key: .a, modifiers: [.command, .shift])))
+        HotKeyManager.Recorder(for: .init("preview1", default: HotKey(key: .a, modifiers: [.command, .shift])))
 
-        HotKeyManager.Recorder(for: .init("toggleApp", default: HotKey(key: .a, modifiers: [.command, .shift])), modifirsSide: true)
+        HotKeyManager.Recorder(for: .init("preview2", default: HotKey(key: .a, modifiers: [.command, .shift, .control, .option, .fn])), modifirsSide: true)
     }
 }
