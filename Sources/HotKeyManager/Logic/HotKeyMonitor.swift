@@ -6,6 +6,7 @@
 //
 
 import AppKit
+import Carbon
 import Combine
 import Foundation
 import Sauce
@@ -20,6 +21,9 @@ final class HotKeyMonitor {
     private var eventMonitor: Any?
     private var localEventMonitor: Any?
     private var cancellables = Set<AnyCancellable>()
+    
+    private var isFnPressed: Bool = false
+    private let kVK_Function = 63
 
     init() {
         // Listen for hotkey changes to update processors
@@ -81,7 +85,8 @@ final class HotKeyMonitor {
     
     @discardableResult
     private func handle(event: NSEvent) -> Bool {
-        guard let keyEvent = KeyEvent(event) else { return false }
+        updateFnStateIfNeeded(event: event)
+        guard let keyEvent = KeyEvent(event, isFnPressed: isFnPressed) else { return false }
         
         var handled = false
         
@@ -114,6 +119,12 @@ final class HotKeyMonitor {
         
         return handled
     }
+    
+    private func updateFnStateIfNeeded(event: NSEvent) {
+        guard event.type == .flagsChanged else { return }
+        guard event.keyCode == kVK_Function else { return }
+        isFnPressed = event.modifierFlags.contains(.function)
+    }
 }
 
 // MARK: - Extensions
@@ -129,7 +140,7 @@ private extension HotKeyProcessor.Output {
 }
 
 private extension KeyEvent {
-    init?(_ event: NSEvent) {
+    init?(_ event: NSEvent, isFnPressed: Bool) {
         // Use CGEvent flags if available to preserve left/right side information
         let modifiers: Modifiers
         if let cgEvent = event.cgEvent {
@@ -141,17 +152,22 @@ private extension KeyEvent {
         // Sauce maps key codes to Key enum
         let key = Sauce.shared.key(for: Int(event.keyCode))
         
+        var finalModifiers = modifiers
+        if !isFnPressed {
+            finalModifiers = finalModifiers.removing(kind: .fn)
+        }
+        
         if event.type == .flagsChanged {
-            self.init(key: nil, modifiers: modifiers)
+            self.init(key: nil, modifiers: finalModifiers)
         } else if event.type == .keyUp {
             // On keyUp, we want to indicate that the key is no longer pressed.
             // HotKeyProcessor expects the "current state" or "event".
             // If we pass the key that was released, HotKeyProcessor might think it's still pressed
             // if it doesn't distinguish between Up/Down.
             // By passing nil, we effectively say "The key component is gone".
-            self.init(key: nil, modifiers: modifiers)
+            self.init(key: nil, modifiers: finalModifiers)
         } else {
-            self.init(key: key, modifiers: modifiers)
+            self.init(key: key, modifiers: finalModifiers)
         }
     }
 }
