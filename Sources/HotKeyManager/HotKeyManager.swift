@@ -80,6 +80,16 @@ public enum HotKeyManager {
         return hotkey
     }
 
+    public static func getHotKeyString(for name: Name) -> String? {
+        guard let hotKey = getHotKey(for: name) else {
+            return nil
+        }
+        let modifiers = hotKey.modifiers.sorted.compactMap { $0.kind.symbolString }.joined()
+        let key = hotKey.key?.toString ?? ""
+        let doubleTap = hotKey.isDoubleTap ? String(localized: "Double Tap", bundle: .module, comment: "Double Tap") : ""
+        return "\(modifiers)\(key) \(doubleTap)"
+    }
+
     /// Set the hotkey for a name.
     public static func setHotKey(_ hotkey: HotKey?, for name: Name) {
         if let hotkey = hotkey {
